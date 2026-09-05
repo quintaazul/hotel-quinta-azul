@@ -1,0 +1,60 @@
+---
+import Base from '../layouts/Base.astro';
+import hotel from '../content/hotel.json';
+import '../styles/page.home.css';
+import { Image } from 'astro:assets';
+import hero from '../assets/hotel-quinta-azul-garcia-exterior.webp';
+import logo from '../assets/logo-quinta-azul-mesa-12.png';
+
+const wa = `https://wa.me/${hotel.whatsapp}`;
+---
+<Base
+  title="Hotel en García, Nuevo León | Hotel Quinta Azul"
+  description="Hotel con alberca en García, Nuevo León, a minutos de Monterrey. Habitaciones limpias desde $900, palapa para eventos y estacionamiento gratis. Reserva directo."
+>
+  <div class="page-wrapper">
+    <div class="navbar6_component w-nav">
+      <div class="navbar6_container">
+        <a href="/" class="navbar6_logo-link w-nav-brand">
+          <Image src={logo} alt={hotel.nombre} width={100} class="navbar6_logo" loading="eager" />
+        </a>
+        <nav role="navigation" class="navbar6_menu w-nav-menu">
+          <a href="/hospedaje" class="navbar6_link w-nav-link">Hospedaje</a>
+          <a href="/celebraciones" class="navbar6_link w-nav-link">Celebraciones</a>
+          <a href="/ubicacion" class="navbar6_link w-nav-link">Ubicación</a>
+          <a href="/contacto" class="navbar6_link w-nav-link">Contacto</a>
+          <a href={wa} class="button">Reservar</a>
+        </nav>
+      </div>
+    </div>
+
+    <header class="section_header5">
+      <div class="padding-global">
+        <div class="container-large">
+          <div class="padding-section-large">
+            <h1 class="heading-style-h1">Tu descanso con alberca en García, Nuevo León</h1>
+            <p class="text-size-medium">
+              Hotel Quinta Azul: cómodo, limpio y a minutos de Monterrey. Alberca abierta
+              hasta las 10 PM, estacionamiento gratis y atención personal.
+            </p>
+            <div class="button-group">
+              <a href={wa} class="button">Reservar</a>
+              <a href="/hospedaje" class="button is-secondary">Ver más</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <Image
+        src={hero}
+        alt="Fachada del Hotel Quinta Azul en García, Nuevo León, con su alberca al aire libre"
+        class="header5_background-image"
+        loading="eager"
+        widths={[500, 800, 1080, 1536]}
+        sizes="(max-width: 1536px) 100vw, 1536px"
+      />
+    </header>
+
+    <!-- PENDIENTE: resto de secciones de la home (beneficios, rating 4.9/73,
+         "Lo que te espera aqui", tabs, footer). Se portan contra _baseline/home.html. -->
+  </div>
+</Base>

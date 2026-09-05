@@ -1,0 +1,96 @@
+---
+import hotel from '../content/hotel.json';
+import '../styles/webflow.shared.css';
+
+export interface Props {
+  /** Title de la pagina. Obligatorio: sin el, seo-check falla el build. */
+  title: string;
+  /** Meta description. Obligatoria por la misma razon. */
+  description: string;
+  /** Imagen para Open Graph. Ruta absoluta desde la raiz del sitio. */
+  ogImage?: string;
+  /** JSON-LD adicional de la pagina (FAQPage, etc.). */
+  schema?: Record<string, unknown> | null;
+}
+
+const { title, description, ogImage = '/og/quinta-azul.jpg', schema = null } = Astro.props;
+
+// Canonical derivado de la URL real de la pagina. En Webflow habia que
+// escribirlo a mano y cuatro paginas se quedaron sin el (defecto 3).
+const canonical = new URL(Astro.url.pathname, Astro.site).href.replace(/\/$/, '') || Astro.site!.href;
+const ogImageAbs = new URL(ogImage, Astro.site).href;
+
+const schemaHotel = {
+  '@context': 'https://schema.org',
+  '@type': 'Hotel',
+  name: hotel.nombre,
+  description: hotel.descripcionCorta,
+  url: hotel.sitio,
+  telephone: hotel.telefono,
+  image: ogImageAbs,
+  priceRange: hotel.rangoPrecio,
+  currenciesAccepted: hotel.precios.moneda,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: hotel.direccion.calle,
+    addressLocality: hotel.direccion.ciudad,
+    addressRegion: hotel.direccion.estado,
+    postalCode: hotel.direccion.codigoPostal,
+    addressCountry: hotel.direccion.pais,
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: hotel.geo.lat, longitude: hotel.geo.lng },
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: hotel.rating.valor,
+    reviewCount: hotel.rating.resenas,
+  },
+  amenityFeature: hotel.amenidades.map((name) => ({
+    '@type': 'LocationFeatureSpecification',
+    name,
+    value: true,
+  })),
+  makesOffer: {
+    '@type': 'Offer',
+    name: `Habitación desde $${hotel.precios.desde} ${hotel.precios.moneda} por noche`,
+    priceCurrency: hotel.precios.moneda,
+    price: hotel.precios.desde,
+    availability: 'https://schema.org/InStock',
+  },
+  checkinTime: hotel.checkin,
+  checkoutTime: hotel.checkout,
+  petsAllowed: hotel.aceptaMascotas,
+  smokingAllowed: hotel.permiteFumar,
+  sameAs: hotel.redes,
+};
+---
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={hotel.nombre} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageAbs} />
+    <meta property="og:locale" content="es_MX" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Nunito:wght@400;500&display=swap"
+    />
+
+    <script type="application/ld+json" set:html={JSON.stringify(schemaHotel)} />
+    {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
