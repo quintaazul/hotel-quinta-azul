@@ -1,0 +1,73 @@
+/**
+ * Sustituye lo que en Webflow hacia jQuery en tiempo de ejecucion.
+ * Es el UNICO CSS nuevo del port: todo lo demas es el de Webflow tal cual.
+ *
+ * Webflow inyectaba un div .w-nav-overlay y estilos en linea desde JavaScript.
+ * Aqui el mismo resultado sale de un atributo y unas cuantas reglas.
+ */
+
+/* ---- Menu movil ------------------------------------------------------ */
+/* Webflow colapsa en "medium" = 991px. Debajo de eso el menu se oculta
+   (.w-nav[data-collapse=medium] .w-nav-menu{display:none}) y lo abria el JS. */
+@media screen and (max-width: 991px) {
+  .navbar6_component[data-abierto] .navbar6_menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    top: 100%;
+    left: 0;
+    right: 0;
+  }
+  /* El icono de hamburguesa era un div; ahora es un <button>, que trae
+     estilos propios del navegador. Los neutralizamos. */
+  .navbar6_menu-button {
+    -webkit-appearance: none;
+    appearance: none;
+    background: none;
+    border: 0;
+    font: inherit;
+    color: inherit;
+  }
+}
+
+/* ---- Pestañas -------------------------------------------------------- */
+/* Webflow ya trae .w-tab-pane{display:none}. Solo falta mostrar la activa. */
+.w-tab-pane.w--tab-active {
+  display: block;
+}
+
+/* ---- Revelado al hacer scroll --------------------------------------- */
+/* Reemplaza la interaccion IX2 de la seccion de la alberca. Se aplica solo
+   si el navegador soporta IntersectionObserver y el JS se ejecuta: sin JS
+   el contenido se ve normal, nunca queda invisible. */
+[data-revelar] {
+  opacity: 0;
+  transform: translateY(2rem);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+[data-revelar][data-visible] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-revelar] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---- Foco visible ---------------------------------------------------- */
+/* Webflow ponia outline:0 en .w-nav-button y .w-tab-link:focus, lo que deja
+   a quien navega con teclado sin saber donde esta. Lo devolvemos. */
+.w-nav-button:focus-visible,
+.w-tab-link:focus-visible,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

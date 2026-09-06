@@ -1,0 +1,91 @@
+---
+/**
+ * Pie de pagina. Marcado y clases identicos a Webflow.
+ * Los datos de contacto salen de hotel.json, la misma fuente que alimenta el
+ * schema, para que no puedan desincronizarse.
+ */
+import hotel from '../content/hotel.json';
+import Foto from './Foto.astro';
+
+const wa = `https://wa.me/${hotel.whatsapp}?text=Hola%2C%20quiero%20reservar%20en%20Hotel%20Quinta%20Azul`;
+const d = hotel.direccion;
+const anio = new Date().getFullYear();
+---
+<footer class="footer12_component color-scheme-4">
+  <div class="padding-global">
+    <div class="container-large">
+      <div class="padding-vertical padding-xxlarge">
+        <div class="padding-bottom padding-xxlarge">
+          <div class="w-layout-grid footer12_top-wrapper">
+            <div class="max-width-medium">
+              <div class="margin-bottom margin-small">
+                <h2 class="heading-style-h1">{hotel.nombre}</h2>
+              </div>
+              <div>Bernardo Reyes esq. Garza Ayala, Col. Centro, {d.ciudad}, N.L., CP {d.codigoPostal}</div>
+              <div class="margin-top margin-medium">
+                <div class="button-group">
+                  <a href={wa} class="button is-alternate w-button" rel="noopener">Reservar</a>
+                  <a href={wa} class="button is-secondary is-alternate w-button" rel="noopener">WhatsApp</a>
+                </div>
+              </div>
+            </div>
+            <div class="w-layout-grid footer12_menu-wrapper">
+              <div class="footer12_link-list">
+                <a href="/hospedaje" class="footer12_link">Habitaciones</a>
+                <a href="/celebraciones" class="footer12_link">Celebraciones</a>
+                <a href="/ubicacion" class="footer12_link">Ubicación</a>
+                <a href="/contacto" class="footer12_link">Contacto</a>
+                <a href="/contacto" class="footer12_link">Preguntas</a>
+              </div>
+              <div class="footer12_link-list">
+                <a href="#" class="footer12_link">Aviso de Privacidad</a>
+                <a href="#" class="footer12_link">Políticas</a>
+                <a href="#" class="footer12_link">Términos</a>
+                <a href="/contacto" class="footer12_link">Contacto</a>
+                <a href={`tel:${hotel.telefono}`} class="footer12_link">Teléfono</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="padding-bottom padding-medium">
+          <div class="footer12_middle-wrapper">
+            <a href="/" class="footer12_logo-link w-nav-brand" aria-label={`${hotel.nombre}, ir al inicio`}>
+              <Foto
+                archivo="logo-quinta-azul-mesa-10.png"
+                alt={hotel.nombre}
+                width={304}
+                height={120}
+                sizes="(max-width: 479px) 97vw, 304px"
+                class="footer12_logo"
+                loading="lazy"
+              />
+            </a>
+          </div>
+        </div>
+
+        <div class="divider-horizontal"></div>
+
+        <div class="padding-top padding-medium">
+          <div class="footer12_bottom-wrapper">
+            <div class="footer12_credit-text">© {anio} {hotel.nombre}. Todos los derechos reservados.</div>
+            <div class="w-layout-grid footer12_social-list">
+              <a
+                href="https://web.facebook.com/HotelQuintaAzul"
+                class="footer12_social-link w-inline-block"
+                rel="noopener"
+                aria-label="Hotel Quinta Azul en Facebook"
+              >
+                <div class="icon-embed-xsmall w-embed">
+                  <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                    <path d="M22 12.0611C22 6.50451 17.5229 2 12 2C6.47715 2 2 6.50451 2 12.0611C2 17.0828 5.65684 21.2452 10.4375 22V14.9694H7.89844V12.0611H10.4375V9.84452C10.4375 7.32296 11.9305 5.93012 14.2146 5.93012C15.3088 5.93012 16.4531 6.12663 16.4531 6.12663V8.60261H15.1922C13.95 8.60261 13.5625 9.37822 13.5625 10.1739V12.0611H16.3359L15.8926 14.9694H13.5625V22C18.3432 21.2452 22 17.083 22 12.0611Z" fill="CurrentColor"></path>
+                  </svg>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

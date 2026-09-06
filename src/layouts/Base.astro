@@ -1,6 +1,7 @@
 ---
 import hotel from '../content/hotel.json';
 import '../styles/webflow.shared.css';
+import '../styles/migracion.css';
 
 export interface Props {
   /** Title de la pagina. Obligatorio: sin el, seo-check falla el build. */
@@ -82,15 +83,73 @@ const schemaHotel = {
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Nunito:wght@400;500&display=swap"
-    />
+    {/*
+      Se usa la API v1 de Google Fonts, la MISMA que usaba Webflow, y no la v2.
+      No es descuido: la v2 sirve Fraunces como fuente variable, cuyas metricas
+      son ligeramente mas estrechas. Con la v2, "Atención personal por WhatsApp"
+      ocupaba 2 lineas en vez de 3 y la seccion quedaba 52 px mas baja que el
+      original. Cargando los mismos archivos, el texto se corta igual.
+    */}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fraunces:500&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:400,500&display=swap" />
 
     <script type="application/ld+json" set:html={JSON.stringify(schemaHotel)} />
     {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
   </head>
   <body>
     <slot />
+
+    <script>
+      // ---- Pestañas -------------------------------------------------------
+      // Sustituye el componente de pestañas de Webflow. Mismas clases, mismo
+      // aspecto; ademas responde a las flechas del teclado, que antes no.
+      document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((grupo) => {
+        const pestanas = [...grupo.querySelectorAll<HTMLElement>('.w-tab-link')];
+        const paneles = [...grupo.querySelectorAll<HTMLElement>('.w-tab-pane')];
+
+        const activar = (i: number, mueveFoco = true) => {
+          pestanas.forEach((p, j) => {
+            p.classList.toggle('w--current', i === j);
+            p.setAttribute('aria-selected', String(i === j));
+            p.setAttribute('tabindex', i === j ? '0' : '-1');
+          });
+          paneles.forEach((p, j) => p.classList.toggle('w--tab-active', i === j));
+          if (mueveFoco) pestanas[i]?.focus();
+        };
+
+        pestanas.forEach((p, i) => {
+          p.addEventListener('click', () => activar(i, false));
+          p.addEventListener('keydown', (e) => {
+            const salto = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+            if (!salto) return;
+            e.preventDefault();
+            activar((i + salto + pestanas.length) % pestanas.length);
+          });
+        });
+      });
+
+      // ---- Revelado al hacer scroll ---------------------------------------
+      // Sustituye la interaccion IX2 de Webflow. Si el navegador no soporta
+      // IntersectionObserver, se muestra todo de inmediato: nunca queda oculto.
+      const revelables = document.querySelectorAll<HTMLElement>('[data-revelar]');
+      if (revelables.length) {
+        if (!('IntersectionObserver' in window)) {
+          revelables.forEach((el) => el.setAttribute('data-visible', ''));
+        } else {
+          const obs = new IntersectionObserver(
+            (entradas) => {
+              entradas.forEach((e) => {
+                if (e.isIntersecting) {
+                  e.target.setAttribute('data-visible', '');
+                  obs.unobserve(e.target);
+                }
+              });
+            },
+            { rootMargin: '0px 0px -10% 0px' }
+          );
+          revelables.forEach((el) => obs.observe(el));
+        }
+      }
+    </script>
   </body>
 </html>

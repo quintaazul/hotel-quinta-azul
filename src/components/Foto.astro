@@ -1,0 +1,65 @@
+---
+/**
+ * Imagen del sitio. Busca el archivo en src/assets y deja que Astro genere
+ * las versiones responsive en WebP, que es lo que antes hacia el CDN de Webflow.
+ *
+ * El alt es OBLIGATORIO. Si una imagen es puramente decorativa, pasa
+ * decorativa={true}: emite alt="" y lo marca para que la verificacion de SEO
+ * sepa que es intencional y no un descuido.
+ */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+const imagenes = import.meta.glob<ImageMetadata>('../assets/*.{webp,png,jpg,jpeg}', {
+  eager: true,
+  import: 'default',
+});
+
+interface Props {
+  archivo: string;
+  alt: string;
+  class?: string;
+  loading?: 'eager' | 'lazy';
+  sizes?: string;
+  widths?: number[];
+  decorativa?: boolean;
+  width?: number;
+  height?: number;
+}
+
+const {
+  archivo,
+  alt,
+  class: clase,
+  loading = 'lazy',
+  sizes,
+  widths,
+  decorativa = false,
+  width,
+  height,
+} = Astro.props;
+
+const src = imagenes[`../assets/${archivo}`];
+if (!src) {
+  throw new Error(
+    `Falta la imagen "${archivo}" en src/assets/. Disponibles: ${Object.keys(imagenes)
+      .map((k) => k.split('/').pop())
+      .join(', ')}`
+  );
+}
+if (!decorativa && !alt.trim()) {
+  throw new Error(`La imagen "${archivo}" no tiene alt. Si es decorativa, pasa decorativa={true}.`);
+}
+---
+<Image
+  src={src}
+  alt={decorativa ? '' : alt}
+  class={clase}
+  loading={loading}
+  decoding={loading === 'eager' ? 'sync' : 'async'}
+  sizes={sizes}
+  widths={widths}
+  width={width}
+  height={height}
+  data-decorativa={decorativa ? '' : undefined}
+/>
