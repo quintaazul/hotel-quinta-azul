@@ -33,6 +33,17 @@ const CAMBIOS_PREVISTOS = {
   },
   // El logo del pie enlazaba a "#", que no lleva a ningun sitio. Ahora va al inicio.
   enlaces: ['(icono) -> #'],
+  // Textos que estaban en el HTML de Webflow y ya no tienen sentido.
+  // El bloque "Tus fechas" era un formulario roto (pedia fechas pero validaba
+  // como correo) que ademas moria con el plan de Webflow. Ahora abre WhatsApp,
+  // asi que sus mensajes de exito y error nunca se mostrarian.
+  textosQuitados: [
+    '¡Perfecto! Nos pondremos en contacto en los próximos minutos.',
+    'No pudimos procesar tu solicitud. Intenta de nuevo.',
+  ],
+  // Texto anadido a proposito: el campo de fechas no tenia nombre accesible,
+  // asi que se le puso una etiqueta que solo leen los lectores de pantalla.
+  textosAnadidos: ['Tus fechas de estancia'],
 };
 
 const nombreImagen = (src) => {
@@ -71,9 +82,15 @@ for (const [nombre, archivoDist] of PAGINAS) {
   // Se comparan las PALABRAS, no los espacios: Webflow deja saltos de linea
   // entre etiquetas que al extraer texto se vuelven espacios sueltos, y eso no
   // es una diferencia visible para nadie.
-  const palabras = (t) => t.replace(/\s+/g, '');
+  // Se descuentan los textos cuyo cambio esta aprobado y documentado, en el
+  // lado que corresponda, y luego se comparan las palabras sin espacios.
+  const palabras = (t, lista) => {
+    let s = t;
+    for (const frase of lista) s = s.split(frase).join('');
+    return s.replace(/\s+/g, '');
+  };
   const tW = texto(w), tA = texto(a);
-  if (palabras(tW) !== palabras(tA)) {
+  if (palabras(tW, CAMBIOS_PREVISTOS.textosQuitados) !== palabras(tA, CAMBIOS_PREVISTOS.textosAnadidos)) {
     // Localizar la primera divergencia para poder señalarla
     let i = 0;
     while (i < Math.min(tW.length, tA.length) && tW[i] === tA[i]) i++;

@@ -71,3 +71,11 @@ textarea:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
+
+/* ---- Elementos ocultos --------------------------------------------- */
+/* El CSS de Webflow declara `display` en .w-form-done y .w-form-fail, y eso
+   gana al atributo `hidden` del navegador: los mensajes de exito y de error
+   ocupaban espacio aunque estuvieran ocultos. */
+[hidden] {
+  display: none !important;
+}

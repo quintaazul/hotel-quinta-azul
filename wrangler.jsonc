@@ -1,0 +1,58 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "hotel-quinta-azul",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-09-05",
+
+  // El sitio son archivos estaticos. Las peticiones a archivos son gratis e
+  // ilimitadas en Cloudflare; el Worker solo se ejecuta para /api/contacto.
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page"
+  },
+
+  // Registros y trazas, para poder ver por que fallo un envio.
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  },
+
+  // Copia de cada solicitud. Si el correo falla, el lead NO se pierde.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "quinta-azul-solicitudes",
+      "database_id": "38b0142f-d6fd-484e-848d-0a8555622764"
+    }
+  ],
+
+  // Aviso por correo al hotel.
+  //
+  // "destination_address" ata el binding a UNA sola direccion: aunque alguien
+  // lograra ejecutar codigo en el Worker, no podria mandar correo a nadie mas.
+  // Ademas, enviar a una direccion de destino verificada es GRATIS en cualquier
+  // plan de Cloudflare y no consume cuota. Por eso se descarto Resend.
+  //
+  // Requisito: Email Routing activo en hotelquintaazul.com y el Gmail del hotel
+  // verificado como direccion de destino. Hasta entonces, el Worker guarda la
+  // solicitud en D1 igual y deja constancia del fallo del correo.
+  "send_email": [
+    {
+      "name": "CORREO",
+      "destination_address": "hotelquintaazul02@gmail.com"
+    }
+  ],
+
+  "vars": {
+    // Hostnames que Turnstile puede devolver como validos en PRODUCCION.
+    // Nunca debe incluir localhost: para desarrollo esta la variable de .dev.vars.
+    "TURNSTILE_HOSTNAMES": "hotelquintaazul.com,www.hotelquintaazul.com",
+    "CORREO_DESTINO": "hotelquintaazul02@gmail.com",
+    "CORREO_ORIGEN": "reservas@hotelquintaazul.com",
+    "ENTORNO": "produccion"
+  }
+
+  // El secreto de Turnstile NO va aqui. Se guarda con:
+  //   npx wrangler secret put TURNSTILE_SECRET
+}

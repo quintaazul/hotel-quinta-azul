@@ -1,0 +1,64 @@
+---
+/**
+ * Bloque "Tus fechas / Verificar" que aparece bajo el formulario de contacto.
+ *
+ * En Webflow estaba roto de dos formas: el campo pedia fechas pero estaba
+ * declarado como `type="email"`, asi que el navegador rechazaba cualquier
+ * fecha que se escribiera; y el envio dependia de los servidores de Webflow,
+ * que dejan de funcionar al cancelar el plan.
+ *
+ * Se conserva el marcado y las clases exactos, asi que se ve igual. Cambian
+ * dos cosas: el campo acepta texto, y al enviar abre WhatsApp con las fechas
+ * ya escritas, que es por donde de verdad se reserva en este hotel.
+ */
+import hotel from '../content/hotel.json';
+---
+<div class="cta58_form-block w-form">
+  <form id="verificar-fechas" name="verificar-fechas" class="cta58_form" method="get">
+    <div class="signup-form-wrapper">
+      <label for="fechas-rapidas" class="sr-solo-lectores">Tus fechas de estancia</label>
+      <input
+        class="form_input w-input"
+        maxlength="120"
+        name="fechas-rapidas"
+        placeholder="Tus fechas"
+        type="text"
+        id="fechas-rapidas"
+        required
+      />
+      <input type="submit" class="button w-button" value="Verificar" />
+    </div>
+    <div class="text-size-tiny">Al reservar directo con nosotros, evitas comisiones y recibes mejor precio.</div>
+  </form>
+</div>
+
+<style>
+  /* Etiqueta solo para lectores de pantalla: el diseno original no la mostraba,
+     pero sin ella el campo no tiene nombre accesible. */
+  .sr-solo-lectores {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
+
+<script define:vars={{ whatsapp: hotel.whatsapp, nombre: hotel.nombre }}>
+  const form = document.querySelector('#verificar-fechas');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const campo = form.querySelector('#fechas-rapidas');
+    const fechas = (campo?.value || '').trim().slice(0, 120);
+    if (!fechas) {
+      campo?.focus();
+      return;
+    }
+    const texto = `Hola, quiero reservar en ${nombre}. Mis fechas son: ${fechas}`;
+    window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(texto)}`, '_blank', 'noopener');
+  });
+</script>

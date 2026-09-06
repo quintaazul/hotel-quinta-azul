@@ -48,13 +48,21 @@ for (const p of PAGINAS) {
     }
   });
 
-  const usaFoto = main.includes('<Foto ');
+  // Solo se importa lo que la pagina usa de verdad.
+  const componentes = [
+    ['Foto', '<Foto '],
+    ['FormularioContacto', '<FormularioContacto />'],
+    ['VerificarFechas', '<VerificarFechas />'],
+  ]
+    .filter(([, marca]) => main.includes(marca))
+    .map(([nombre]) => `\nimport ${nombre} from '../components/${nombre}.astro';`)
+    .join('');
   const contenido = `---
 // Generado por scripts/generar-paginas.mjs a partir de _baseline/${p.base}.html
 // El marcado y las clases son los de Webflow. Para regenerar: npm run generar
 import Base from '../layouts/Base.astro';
 import Navbar from '../components/Navbar.astro';
-import Footer from '../components/Footer.astro';${usaFoto ? "\nimport Foto from '../components/Foto.astro';" : ''}
+import Footer from '../components/Footer.astro';${componentes}
 import '../styles/${p.css}';
 
 const schemaPagina = ${schemaExtra};

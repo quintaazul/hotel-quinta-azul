@@ -117,12 +117,28 @@ main.find('.w-tabs').each((ti, tabs) => {
   });
 });
 
+// --- Formulario de contacto: se sustituye por el componente propio ------
+// El de Webflow depende de sus servidores y muere al cancelar el plan.
+main.find('form[data-name="Contact 6 Form"]').closest('.w-form').each((_, bloque) => {
+  $(bloque).replaceWith('<span data-componente="FormularioContacto"></span>');
+});
+// El mini formulario de email de la barra tampoco tiene backend: se convierte
+// en un enlace directo a WhatsApp, que es el canal real de reservas.
+main.find('form[data-name="Email Form"]').closest('.w-form').each((_, bloque) => {
+  avisos.push('Mini formulario "Tus fechas" sustituido: era type=email con placeholder de fechas (no se podia enviar)');
+  $(bloque).replaceWith('<span data-componente="VerificarFechas"></span>');
+});
+
 // --- Enlaces vacios (#) que no llevan a ningun sitio --------------------
 main.find('a[href="#"]').each((_, a) => {
   avisos.push(`Enlace a "#" sin destino: "${$(a).text().trim().slice(0, 40)}"`);
 });
 
 let html = $.html(main);
+
+// Los marcadores vuelven a ser componentes.
+html = html.replace(/<span data-componente="FormularioContacto"><\/span>/g, '<FormularioContacto />');
+html = html.replace(/<span data-componente="VerificarFechas"><\/span>/g, '<VerificarFechas />');
 
 // Los marcadores vuelven a ser componentes <Foto>.
 html = html.replace(/<span data-foto="([^"]+)"><\/span>/g, (_, b64) =>

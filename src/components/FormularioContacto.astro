@@ -1,0 +1,200 @@
+---
+/**
+ * Formulario de solicitud de reserva.
+ *
+ * El marcado y las clases son EXACTAMENTE los de Webflow, para que se vea
+ * igual. Lo que cambia es lo que no se ve:
+ *
+ *  - Los campos tenian los nombres de la plantilla Relume, asi que los avisos
+ *    llegaban ilegibles: el telefono viajaba en "Contact 6 Last Name" y el
+ *    tipo de habitacion se guardaba como "First" / "Second". Ahora cada campo
+ *    se llama como lo que es.
+ *  - El boton decia "Please wait..." en ingles, en un sitio en espanol.
+ *  - Se anade Turnstile, que Webflow tenia con SU clave (no reutilizable).
+ *  - El envio va por fetch a /api/contacto, sin recargar la pagina.
+ */
+import hotel from '../content/hotel.json';
+
+const sitekeyPrueba = '1x00000000000000000000AA'; // clave de prueba de Cloudflare: siempre pasa
+const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY || sitekeyPrueba;
+
+const motivos = [
+  { valor: 'hospedaje', etiqueta: 'Hospedaje' },
+  { valor: 'celebracion', etiqueta: 'Celebración' },
+  { valor: 'negocios', etiqueta: 'Viaje de negocios' },
+  { valor: 'otro-motivo', etiqueta: 'Otro motivo' },
+  { valor: 'consulta', etiqueta: 'Consulta general' },
+  { valor: 'otro', etiqueta: 'Otro' },
+];
+---
+<div class="contact6_form-block w-form">
+  <form
+    id="formulario-contacto"
+    name="formulario-contacto"
+    method="post"
+    action="/api/contacto"
+    class="contact6_form"
+    novalidate={false}
+  >
+    <div class="form_field-2col">
+      <div class="form_field-wrapper">
+        <label for="nombre" class="form_field-label">Nombre completo</label>
+        <input class="form_input w-input" maxlength="120" name="nombre" placeholder="" type="text" id="nombre" autocomplete="name" required />
+      </div>
+      <div class="form_field-wrapper">
+        <label for="contacto" class="form_field-label">Teléfono o correo</label>
+        <input class="form_input w-input" maxlength="160" name="contacto" placeholder="" type="text" id="contacto" autocomplete="tel" required />
+      </div>
+    </div>
+
+    <div class="form_field-2col is-mobile-1col">
+      <div class="form_field-wrapper">
+        <label for="fechas" class="form_field-label">Fechas</label>
+        <input class="form_input w-input" maxlength="120" name="fechas" placeholder="" type="text" id="fechas" required />
+      </div>
+      <div class="form_field-wrapper">
+        <label for="personas" class="form_field-label">Número de personas</label>
+        <input class="form_input w-input" name="personas" placeholder="" type="number" id="personas" min="1" max="200" inputmode="numeric" required />
+      </div>
+    </div>
+
+    <div class="form_field-wrapper">
+      <label for="habitacion" class="form_field-label">Tipo de habitación</label>
+      <select id="habitacion" name="habitacion" required class="form_input is-select-input w-select">
+        <option value="">Selecciona una opción</option>
+        <option value="sencilla">Sencilla</option>
+        <option value="doble">Doble</option>
+      </select>
+    </div>
+
+    <div class="padding-vertical padding-xsmall">
+      <div class="form_field-wrapper">
+        <div class="margin-bottom margin-xsmall">
+          <span class="form_field-label" id="etiqueta-motivo">¿Cuál es tu motivo de visita?</span>
+        </div>
+        <div class="w-layout-grid form_radio-2col" role="radiogroup" aria-labelledby="etiqueta-motivo">
+          {motivos.map((m) => (
+            <label class="form_radio w-radio">
+              <div class="w-form-formradioinput w-form-formradioinput--inputType-custom form_radio-icon w-radio-input"></div>
+              <input
+                type="radio"
+                name="motivo"
+                id={`motivo-${m.valor}`}
+                style="opacity:0;position:absolute;z-index:-1"
+                value={m.valor}
+              />
+              <span class="form_radio-label w-form-label">{m.etiqueta}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="form_field-wrapper">
+      <label for="mensaje" class="form_field-label">Mensaje</label>
+      <textarea
+        id="mensaje"
+        name="mensaje"
+        maxlength="5000"
+        placeholder="Cuéntanos más sobre tu reserva..."
+        required
+        class="form_input is-text-area w-input"></textarea>
+    </div>
+
+    <div class="margin-bottom margin-xsmall">
+      <label class="w-checkbox form_checkbox">
+        <div class="w-checkbox-input w-checkbox-input--inputType-custom form_checkbox-icon"></div>
+        <input type="checkbox" name="privacidad" id="privacidad" value="si" required style="opacity:0;position:absolute;z-index:-1" />
+        <span class="form_checkbox-label text-size-small w-form-label">Acepto el aviso de privacidad</span>
+      </label>
+
+      {/*
+        Turnstile con appearance="interaction-only": no se dibuja nada para la
+        inmensa mayoria de visitantes, asi que el formulario se ve igual que en
+        Webflow. Solo aparece un desafio ante trafico sospechoso.
+
+        Va DENTRO de este bloque, no como hijo directo del formulario, porque
+        el formulario es una rejilla con separacion de 24 px: un hijo mas, aunque
+        mida cero, se llevaria una separacion entera y bajaria todo 24 px.
+
+        El widget de Cloudflare cumple WCAG 2.2 AA.
+      */}
+      <div
+        class="cf-turnstile"
+        data-sitekey={sitekey}
+        data-action="contacto"
+        data-appearance="interaction-only"
+        data-language="es"
+        data-response-field-name="cf-turnstile-response"
+      ></div>
+    </div>
+
+    <input type="submit" id="boton-enviar" class="button w-button" value="Enviar solicitud" />
+  </form>
+
+  <div class="form_message-success-wrapper w-form-done" role="status" hidden>
+    <div class="form_message-success">
+      <div class="success-text">¡Gracias! Nos pondremos en contacto pronto.</div>
+    </div>
+  </div>
+
+  <div class="form_message-error w-form-fail" role="alert" hidden>
+    <div class="error-text">Hubo un error al enviar. Intenta de nuevo.</div>
+  </div>
+</div>
+
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#formulario-contacto');
+  const bloque = form?.closest('.w-form');
+  const exito = bloque?.querySelector<HTMLElement>('.w-form-done');
+  const fallo = bloque?.querySelector<HTMLElement>('.w-form-fail');
+  const boton = form?.querySelector<HTMLInputElement>('#boton-enviar');
+
+  const textoBoton = boton?.value ?? 'Enviar solicitud';
+
+  function mostrarError(mensaje: string) {
+    if (!fallo) return;
+    const t = fallo.querySelector('.error-text');
+    if (t) t.textContent = mensaje;
+    fallo.hidden = false;
+    fallo.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form.reportValidity()) return;
+
+    if (fallo) fallo.hidden = true;
+    boton!.disabled = true;
+    boton!.value = 'Enviando...';
+
+    try {
+      const r = await fetch('/api/contacto', {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { accept: 'application/json' },
+      });
+      const datos = await r.json().catch(() => ({}) as { ok?: boolean; error?: string });
+
+      if (r.ok && datos.ok) {
+        form.hidden = true;
+        if (exito) {
+          exito.hidden = false;
+          exito.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+        return;
+      }
+      mostrarError(datos.error || 'Hubo un error al enviar. Intenta de nuevo.');
+    } catch {
+      mostrarError('No hay conexión. Revisa tu internet o escríbenos por WhatsApp.');
+    } finally {
+      boton!.disabled = false;
+      boton!.value = textoBoton;
+      // El token de Turnstile es de un solo uso: si la persona reintenta sin
+      // recargar, hay que pedir uno nuevo.
+      window.turnstile?.reset();
+    }
+  });
+</script>

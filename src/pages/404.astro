@@ -1,0 +1,37 @@
+---
+// Pagina de error 404. Portada de _baseline/404.html.
+// Esta pagina faltaba: la Fase 1 solo cubrio las 5 publicas, pero Cloudflare
+// la necesita para responder bien cuando alguien pide una URL que no existe.
+import Base from '../layouts/Base.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import hotel from '../content/hotel.json';
+import '../styles/page.404.css';
+
+const wa = `https://wa.me/${hotel.whatsapp}?text=Hola%2C%20quiero%20reservar%20en%20Hotel%20Quinta%20Azul`;
+---
+<Base
+  title="Página no encontrada | Hotel Quinta Azul"
+  description="La página que buscas no existe. Vuelve al inicio o escríbenos por WhatsApp para reservar tu estancia en Hotel Quinta Azul, García, Nuevo León."
+>
+  <div class="page-wrapper">
+    <Navbar />
+    <main class="main-wrapper">
+      <section class="section_404-1">
+        <div class="container-large">
+          <div class="qa-404-content-1">
+            <div class="qa-404-number-1">404</div>
+            <h1 class="heading-style-h1 qa-404-title">Ups, esta página se nos escapó</h1>
+            <p class="text-size-medium qa-404-text-1">El enlace puede estar roto o la página se movió. Pero tu descanso con alberca en García, Nuevo León, te sigue esperando.</p>
+            <div class="button-group is-center">
+              <a href="/" class="button">Volver al inicio</a>
+              <a href="/hospedaje" class="button is-secondary">Ver habitaciones</a>
+              <a href={wa} class="button is-secondary" rel="noopener">WhatsApp</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <Footer />
+  </div>
+</Base>
