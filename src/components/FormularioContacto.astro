@@ -15,8 +15,10 @@
  */
 import hotel from '../content/hotel.json';
 
-const sitekeyPrueba = '1x00000000000000000000AA'; // clave de prueba de Cloudflare: siempre pasa
-const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY || sitekeyPrueba;
+// La clave de Turnstile es publica: viaja en el HTML. Vive en hotel.json,
+// la misma fuente unica que el resto de los datos del hotel.
+const sitekey = hotel.turnstileSitekey;
+if (!sitekey) throw new Error('Falta turnstileSitekey en src/content/hotel.json');
 
 const motivos = [
   { valor: 'hospedaje', etiqueta: 'Hospedaje' },

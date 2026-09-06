@@ -47,7 +47,7 @@
   "vars": {
     // Hostnames que Turnstile puede devolver como validos en PRODUCCION.
     // Nunca debe incluir localhost: para desarrollo esta la variable de .dev.vars.
-    "TURNSTILE_HOSTNAMES": "hotelquintaazul.com,www.hotelquintaazul.com",
+    "TURNSTILE_HOSTNAMES": "hotelquintaazul.com,www.hotelquintaazul.com,hotel-quinta-azul.hotel-quinta-azul.workers.dev",
     "CORREO_DESTINO": "hotelquintaazul02@gmail.com",
     "CORREO_ORIGEN": "reservas@hotelquintaazul.com",
     "ENTORNO": "produccion"

@@ -4,11 +4,9 @@
   "sitio": "https://hotelquintaazul.com",
   "idioma": "es-MX",
   "zonaHoraria": "America/Monterrey",
-
   "telefono": "+528129218643",
   "whatsapp": "528129218643",
   "horarioAtencion": "7:00 a 23:00, todos los días",
-
   "direccion": {
     "calle": "Bernardo Reyes esquina con Garza Ayala, Col. Centro",
     "ciudad": "García",
@@ -16,18 +14,24 @@
     "codigoPostal": "66000",
     "pais": "MX"
   },
-  "geo": { "lat": 25.8153871, "lng": -100.5947355 },
+  "geo": {
+    "lat": 25.8153871,
+    "lng": -100.5947355
+  },
   "mapaUrl": "https://www.google.com/maps/search/Hotel+Quinta+Azul+Garc%C3%ADa+Nuevo+Le%C3%B3n",
-
-  "rating": { "valor": "4.9", "resenas": "73" },
-
-  "precios": { "desde": "900", "moneda": "MXN" },
+  "rating": {
+    "valor": "4.9",
+    "resenas": "73"
+  },
+  "precios": {
+    "desde": "900",
+    "moneda": "MXN"
+  },
   "checkin": "14:00",
   "checkout": "11:00",
   "aceptaMascotas": false,
   "permiteFumar": false,
   "rangoPrecio": "$$",
-
   "amenidades": [
     "Alberca al aire libre",
     "Estacionamiento privado gratis",
@@ -35,8 +39,9 @@
     "Aire acondicionado",
     "Palapa para eventos (hasta 60 personas)"
   ],
-
-  "redes": ["https://www.facebook.com/profile.php?id=61557575860076"],
-
-  "_nota": "Fuente unica de verdad. Alimenta a la vez el texto visible y el JSON-LD, para que no puedan contradecirse. La imagen del schema se resuelve desde src/assets en el layout: en Webflow apuntaba a /img/...webp y devolvia 404 (defecto 8 de la auditoria)."
+  "redes": [
+    "https://www.facebook.com/profile.php?id=61557575860076"
+  ],
+  "turnstileSitekey": "0x4AAAAAAEp0Zwo-xpt7mMKF",
+  "_nota": "Fuente unica de verdad. Alimenta a la vez el texto visible y el JSON-LD, para que no puedan contradecirse. La imagen del schema se resuelve desde src/assets en el layout: en Webflow apuntaba a /img/...webp y devolvia 404 (defecto 8 de la auditoria). La clave de Turnstile es PUBLICA por diseño (va en el HTML), asi que vive aqui y no en un .env ignorado: de lo contrario un clon nuevo compilaria con la clave de prueba sin avisar."
 }
