@@ -4,6 +4,15 @@
   "main": "src/worker.ts",
   "compatibility_date": "2026-09-05",
 
+  // Dominio real (Custom Domain: Cloudflare crea el DNS y el certificado).
+  // El www NO va aqui: lo atiende el Worker de redireccion-www/ con un 301.
+  // Conectado el 10-sep-2026 al salir de Webflow.
+  "routes": [{ "pattern": "hotelquintaazul.com", "custom_domain": true }],
+
+  // Sin copia del sitio en *.workers.dev: seria un duplicado indexable.
+  "workers_dev": false,
+  "preview_urls": false,
+
   // El sitio son archivos estaticos. Las peticiones a archivos son gratis e
   // ilimitadas en Cloudflare; el Worker solo se ejecuta para /api/contacto.
   "assets": {
@@ -47,7 +56,7 @@
   "vars": {
     // Hostnames que Turnstile puede devolver como validos en PRODUCCION.
     // Nunca debe incluir localhost: para desarrollo esta la variable de .dev.vars.
-    "TURNSTILE_HOSTNAMES": "hotelquintaazul.com,www.hotelquintaazul.com,hotel-quinta-azul.hotel-quinta-azul.workers.dev",
+    "TURNSTILE_HOSTNAMES": "hotelquintaazul.com,www.hotelquintaazul.com",
     "CORREO_DESTINO": "hotelquintaazul02@gmail.com",
     "CORREO_ORIGEN": "reservas@hotelquintaazul.com",
     "ENTORNO": "produccion"

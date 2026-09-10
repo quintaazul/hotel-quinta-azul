@@ -18,7 +18,11 @@ const { title, description, ogImage = '/og/quinta-azul.jpg', schema = null } = A
 
 // Canonical derivado de la URL real de la pagina. En Webflow habia que
 // escribirlo a mano y cuatro paginas se quedaron sin el (defecto 3).
-const canonical = new URL(Astro.url.pathname, Astro.site).href.replace(/\/$/, '') || Astro.site!.href;
+// Con build.format 'file', Astro.url.pathname trae el nombre del ARCHIVO
+// (/contacto.html, /index.html) y no la URL que se sirve (/contacto, /). La
+// version con .html redirige, asi que el canonical apuntaba a una redireccion.
+const ruta = Astro.url.pathname.replace(/\.html$/, '').replace(/(^|\/)index$/, '/').replace(/\/$/, '');
+const canonical = ruta ? new URL(ruta, Astro.site).href : Astro.site!.href;
 const ogImageAbs = new URL(ogImage, Astro.site).href;
 
 const schemaHotel = {

@@ -1,0 +1,14 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  // Redireccion www -> dominio principal (ver worker.js).
+  // Se despliega aparte:  npx wrangler deploy -c redireccion-www/wrangler.jsonc
+  "name": "hotel-quinta-azul-www",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-05",
+
+  // Solo debe responder en el www: nada de subdominio workers.dev ni previews.
+  "workers_dev": false,
+  "preview_urls": false,
+
+  "routes": [{ "pattern": "www.hotelquintaazul.com", "custom_domain": true }]
+}
