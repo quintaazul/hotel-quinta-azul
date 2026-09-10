@@ -72,7 +72,10 @@ const motivos = [
     <div class="padding-vertical padding-xsmall">
       <div class="form_field-wrapper">
         <div class="margin-bottom margin-xsmall">
-          <span class="form_field-label" id="etiqueta-motivo">¿Cuál es tu motivo de visita?</span>
+          {/* En Webflow era un <label> (bloque, con margen inferior). Es un div y no
+              un label porque no apunta a un solo campo: nombra al grupo de opciones
+              via aria-labelledby. Como bloque se ve identico al original. */}
+          <div class="form_field-label" id="etiqueta-motivo">¿Cuál es tu motivo de visita?</div>
         </div>
         <div class="w-layout-grid form_radio-2col" role="radiogroup" aria-labelledby="etiqueta-motivo">
           {motivos.map((m) => (
@@ -178,7 +181,7 @@ const motivos = [
         body: new FormData(form),
         headers: { accept: 'application/json' },
       });
-      const datos = await r.json().catch(() => ({}) as { ok?: boolean; error?: string });
+      const datos = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
 
       if (r.ok && datos.ok) {
         form.hidden = true;
@@ -196,7 +199,7 @@ const motivos = [
       boton!.value = textoBoton;
       // El token de Turnstile es de un solo uso: si la persona reintenta sin
       // recargar, hay que pedir uno nuevo.
-      window.turnstile?.reset();
+      (window as Window & { turnstile?: { reset(): void } }).turnstile?.reset();
     }
   });
 </script>

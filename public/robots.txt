@@ -1,0 +1,8 @@
+# Todo el sitio es publico: no hay nada que ocultar a los buscadores.
+User-agent: *
+Allow: /
+
+# Astro genera este indice en cada build, asi que nunca se desincroniza
+# de las paginas reales. En Webflow, robots.txt existia pero estaba VACIO
+# (0 bytes) y /sitemap.xml devolvia 404.
+Sitemap: https://hotelquintaazul.com/sitemap-index.xml

@@ -1,0 +1,17 @@
+/**
+ * Orden del CSS de esta pagina, IDENTICO al de Webflow:
+ *   1. webflow.shared.css   (estilos generales del sitio)
+ *   2. page.ubicacion.css   (estilos propios de la pagina)
+ *   3. webflow-inline.css   (los <style> que Webflow ponia al final del <head>)
+ *   4. migracion.css        (lo que antes hacia el JavaScript de Webflow)
+ *
+ * El orden importa: cuando dos reglas empatan, gana la ultima. Si cada archivo
+ * se importara por separado, Astro junta los que comparten todas las paginas
+ * en un paquete y pone el CSS de la pagina DESPUES, invirtiendo el orden (asi
+ * los enlaces del menu movil salian a 18 px en vez de 16 px). Encadenados aqui,
+ * el empaquetador los respeta tal cual.
+ */
+@import '../webflow.shared.css';
+@import '../page.ubicacion.css';
+@import '../webflow-inline.css';
+@import '../migracion.css';

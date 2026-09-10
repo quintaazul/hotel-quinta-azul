@@ -8,16 +8,11 @@
 
 /* ---- Menu movil ------------------------------------------------------ */
 /* Webflow colapsa en "medium" = 991px. Debajo de eso el menu se oculta
-   (.w-nav[data-collapse=medium] .w-nav-menu{display:none}) y lo abria el JS. */
+   (.w-nav[data-collapse=medium] .w-nav-menu{display:none}). Al abrirlo, el
+   script pone las mismas marcas que webflow.js (data-nav-menu-open en el menu,
+   w--nav-link-open en los enlaces) y el propio CSS de Webflow lo muestra:
+   aqui no hace falta ninguna regla de visualizacion. */
 @media screen and (max-width: 991px) {
-  .navbar6_component[data-abierto] .navbar6_menu {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    top: 100%;
-    left: 0;
-    right: 0;
-  }
   /* El icono de hamburguesa era un div; ahora es un <button>, que trae
      estilos propios del navegador. Los neutralizamos. */
   .navbar6_menu-button {
@@ -36,25 +31,117 @@
   display: block;
 }
 
-/* ---- Revelado al hacer scroll --------------------------------------- */
-/* Reemplaza la interaccion IX2 de la seccion de la alberca. Se aplica solo
-   si el navegador soporta IntersectionObserver y el JS se ejecuta: sin JS
-   el contenido se ve normal, nunca queda invisible. */
-[data-revelar] {
-  opacity: 0;
-  transform: translateY(2rem);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+/* ---- Animaciones de Webflow (IX2) ------------------------------------ */
+/* Mismos valores que las interacciones originales (tiempos, curvas y
+   pantallas). Los estados iniciales solo aplican con JavaScript activo
+   (clase .js-activo en <html>, igual que el w-mod-js de Webflow): sin JS
+   todo se ve en su estado final. La logica esta en scripts/interacciones.ts.
+   cubic-bezier(0.165, 0.84, 0.44, 1) es la curva "outQuart" de Webflow. */
+
+/* Home, alberca: la foto arranca al 200% de ancho y se encoge al 100%
+   en 1.4 s cuando la seccion entra en pantalla. Solo desde 768 px. */
+@media screen and (min-width: 768px) {
+  .js-activo [data-encoger] {
+    width: 200%;
+  }
+  .js-activo [data-encoger][data-visible] {
+    width: 100%;
+    transition: width 1.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
 }
-[data-revelar][data-visible] {
-  opacity: 1;
-  transform: none;
+
+/* Hospedaje: tarjetas de habitaciones. Solo desde 992 px. Al pasar el
+   raton: ancho 50% -> 70%, velo 0.5 -> 0.7 y aparece el texto (0.3 s);
+   al salir vuelve todo en 0.2 s. */
+@media screen and (min-width: 992px) {
+  .js-activo .layout422_card {
+    transition: width 0.2s ease;
+  }
+  .js-activo .layout422_card[data-hover] {
+    width: 70%;
+    transition: width 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+  .js-activo .layout422_overlay {
+    transition: background-color 0.2s ease;
+  }
+  .js-activo .layout422_card[data-hover] .layout422_overlay {
+    background-color: rgb(0 0 0 / 0.7);
+    transition-duration: 0.3s;
+  }
+  .js-activo .layout422_card-content-bottom {
+    height: 0;
+    opacity: 0;
+    transform: translateY(100%);
+    transition:
+      opacity 0.2s cubic-bezier(0.165, 0.84, 0.44, 1),
+      transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1),
+      height 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+  .js-activo .layout422_card[data-hover] .layout422_card-content-bottom {
+    opacity: 1;
+    transform: none;
+    transition-duration: 0.3s;
+  }
+}
+
+/* Contacto y Ubicación: preguntas frecuentes. La respuesta se despliega
+   en 0.4 s y el "+" gira 45 grados en 0.2 s. */
+.faq5_answer {
+  transition: height 0.4s ease;
+}
+.faq5_icon-wrapper {
+  transition: transform 0.2s ease;
+}
+.faq5_question[aria-expanded='true'] .faq5_icon-wrapper {
+  transform: rotate(45deg);
+}
+
+/* Menu movil: baja desde debajo de la barra en 0.4 s y al cerrar vuelve
+   a subir. El recorte (clip-path) evita que se vea encima de la barra,
+   igual que el contenedor .w-nav-overlay de Webflow. */
+@keyframes menu-baja {
+  from {
+    transform: translateY(calc(-100% - var(--alto-nav, 0px)));
+    clip-path: inset(calc(100% + var(--alto-nav, 0px)) 0 0 0);
+  }
+  to {
+    transform: none;
+    clip-path: inset(0);
+  }
+}
+@keyframes menu-sube {
+  from {
+    transform: none;
+    clip-path: inset(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--alto-nav, 0px)));
+    clip-path: inset(calc(100% + var(--alto-nav, 0px)) 0 0 0);
+  }
+}
+@media screen and (max-width: 991px) {
+  .navbar6_component[data-abierto] .navbar6_menu {
+    animation: menu-baja 0.4s ease;
+  }
+  .navbar6_component[data-cerrando] .navbar6_menu {
+    animation: menu-sube 0.4s ease forwards;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-revelar] {
-    opacity: 1;
-    transform: none;
-    transition: none;
+  .js-activo [data-encoger] {
+    width: 100% !important;
+  }
+  .js-activo [data-encoger],
+  .layout422_card,
+  .layout422_overlay,
+  .layout422_card-content-bottom,
+  .faq5_answer,
+  .faq5_icon-wrapper {
+    transition: none !important;
+  }
+  .navbar6_component .navbar6_menu {
+    animation: none !important;
   }
 }
 
@@ -78,4 +165,41 @@ textarea:focus-visible {
    ocupaban espacio aunque estuvieran ocultos. */
 [hidden] {
   display: none !important;
+}
+
+/* ---- Visor de fotos -------------------------------------------------- */
+/* La galeria de Webflow tenia sus datos vacios y no abria nada. Este visor
+   usa la imagen que ya esta en cada tarjeta. No altera la pagina: solo
+   aparece al hacer clic en una foto. */
+.visor-fotos {
+  max-width: 92vw;
+  max-height: 92vh;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+.visor-fotos::backdrop {
+  background: rgb(0 0 0 / 0.85);
+}
+.visor-fotos img {
+  display: block;
+  max-width: 92vw;
+  max-height: 92vh;
+  width: auto;
+  height: auto;
+  border-radius: 0.5rem;
+}
+.visor-cerrar {
+  position: absolute;
+  top: -2.75rem;
+  right: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: #fff;
+  background: none;
+  border: 0;
+  cursor: pointer;
 }

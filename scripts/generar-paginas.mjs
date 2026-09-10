@@ -63,7 +63,8 @@ for (const p of PAGINAS) {
 import Base from '../layouts/Base.astro';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';${componentes}
-import '../styles/${p.css}';
+// Todo el CSS de la pagina, en el mismo orden que Webflow (ver el archivo).
+import '../styles/orden-webflow/${p.css}';
 
 const schemaPagina = ${schemaExtra};
 ---

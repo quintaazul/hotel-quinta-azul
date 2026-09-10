@@ -1,8 +1,7 @@
 ---
 import hotel from '../content/hotel.json';
-import '../styles/webflow.shared.css';
-import '../styles/webflow-inline.css';
-import '../styles/migracion.css';
+// El CSS NO se importa aqui: cada pagina importa src/styles/orden-webflow/,
+// que encadena los archivos en el mismo orden que Webflow.
 
 export interface Props {
   /** Title de la pagina. Obligatorio: sin el, seo-check falla el build. */
@@ -69,6 +68,12 @@ const schemaHotel = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/*
+      Marca que hay JavaScript, igual que el "w-mod-js" de Webflow. Los estados
+      iniciales de las animaciones dependen de esta clase: sin JavaScript la
+      pagina se ve completa y quieta, nunca con partes ocultas.
+    */}
+    <script is:inline>document.documentElement.classList.add('js-activo');</script>
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
@@ -101,56 +106,8 @@ const schemaHotel = {
     <slot />
 
     <script>
-      // ---- Pestañas -------------------------------------------------------
-      // Sustituye el componente de pestañas de Webflow. Mismas clases, mismo
-      // aspecto; ademas responde a las flechas del teclado, que antes no.
-      document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((grupo) => {
-        const pestanas = [...grupo.querySelectorAll<HTMLElement>('.w-tab-link')];
-        const paneles = [...grupo.querySelectorAll<HTMLElement>('.w-tab-pane')];
-
-        const activar = (i: number, mueveFoco = true) => {
-          pestanas.forEach((p, j) => {
-            p.classList.toggle('w--current', i === j);
-            p.setAttribute('aria-selected', String(i === j));
-            p.setAttribute('tabindex', i === j ? '0' : '-1');
-          });
-          paneles.forEach((p, j) => p.classList.toggle('w--tab-active', i === j));
-          if (mueveFoco) pestanas[i]?.focus();
-        };
-
-        pestanas.forEach((p, i) => {
-          p.addEventListener('click', () => activar(i, false));
-          p.addEventListener('keydown', (e) => {
-            const salto = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-            if (!salto) return;
-            e.preventDefault();
-            activar((i + salto + pestanas.length) % pestanas.length);
-          });
-        });
-      });
-
-      // ---- Revelado al hacer scroll ---------------------------------------
-      // Sustituye la interaccion IX2 de Webflow. Si el navegador no soporta
-      // IntersectionObserver, se muestra todo de inmediato: nunca queda oculto.
-      const revelables = document.querySelectorAll<HTMLElement>('[data-revelar]');
-      if (revelables.length) {
-        if (!('IntersectionObserver' in window)) {
-          revelables.forEach((el) => el.setAttribute('data-visible', ''));
-        } else {
-          const obs = new IntersectionObserver(
-            (entradas) => {
-              entradas.forEach((e) => {
-                if (e.isIntersecting) {
-                  e.target.setAttribute('data-visible', '');
-                  obs.unobserve(e.target);
-                }
-              });
-            },
-            { rootMargin: '0px 0px -10% 0px' }
-          );
-          revelables.forEach((el) => obs.observe(el));
-        }
-      }
+      // Pestañas, tarjetas, acordeon, galeria y animaciones: ver el archivo.
+      import '../scripts/interacciones.ts';
     </script>
   </body>
 </html>

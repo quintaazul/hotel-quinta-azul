@@ -6,7 +6,7 @@
  *   - <img> del CDN de Webflow  ->  <Foto> (imagenes locales, responsive)
  *   - atributos internos de Webflow (data-w-id, data-wf-*)  ->  se eliminan
  *   - las pestañas  ->  mismas clases, con roles ARIA y JS propio
- *   - la interaccion IX2  ->  data-revelar
+ *   - la interaccion IX2  ->  data-encoger
  *
  *   node scripts/convertir.mjs home > /tmp/main.astro
  */
@@ -86,7 +86,7 @@ main.find('[data-w-id]').each((_, el) => {
   $(el).removeAttr('data-w-id');
   // La seccion de la alberca tenia una interaccion de revelado al hacer scroll.
   if (($(el).attr('class') || '').includes('_image-wrapper')) {
-    $(el).attr('data-revelar', '');
+    $(el).attr('data-encoger', '');
   }
 });
 main.find('[data-wf-sku-bindings], [data-wf-bindings]').removeAttr('data-wf-sku-bindings').removeAttr('data-wf-bindings');
@@ -127,6 +127,21 @@ main.find('form[data-name="Contact 6 Form"]').closest('.w-form').each((_, bloque
 main.find('form[data-name="Email Form"]').closest('.w-form').each((_, bloque) => {
   avisos.push('Mini formulario "Tus fechas" sustituido: era type=email con placeholder de fechas (no se podia enviar)');
   $(bloque).replaceWith('<span data-componente="VerificarFechas"></span>');
+});
+
+// --- Scripts de Webflow que dependian de jQuery -------------------------
+// La pagina de habitaciones traia un <script src="code.jquery.com"> mas unas
+// lineas de jQuery para atenuar las tarjetas al pasar el raton. Astro conserva
+// ese import remoto, asi que la pagina seguia descargando 30 KB de jQuery de un
+// tercero para un efecto de seis lineas. Se eliminan aqui y el mismo efecto se
+// reimplementa en Base.astro con JavaScript nativo.
+main.find('script').each((_, el) => {
+  const src = $(el).attr('src') || '';
+  const codigo = $(el).html() || '';
+  if (/jquery/i.test(src) || /\$\(/.test(codigo)) {
+    avisos.push(`Script jQuery de Webflow eliminado (reimplementado en Base.astro): ${src || 'en linea'}`);
+    $(el).remove();
+  }
 });
 
 // --- Enlaces vacios (#) que no llevan a ningun sitio --------------------

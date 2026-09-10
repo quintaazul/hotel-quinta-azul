@@ -64,19 +64,60 @@ const esActual = (href: string) => actual === href;
 <script>
   const navbar = document.querySelector<HTMLElement>('[data-navbar]');
   const boton = navbar?.querySelector<HTMLButtonElement>('.w-nav-button');
+  const menu = navbar?.querySelector<HTMLElement>('.w-nav-menu');
+  const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  function cerrar() {
+  const enlaces = navbar ? [...navbar.querySelectorAll<HTMLElement>('.w-nav-link')] : [];
+
+  // Las mismas marcas que ponia webflow.js al abrir: con ellas aplica el CSS
+  // de Webflow para el menu abierto (enlaces uno debajo de otro, botones a
+  // todo el ancho). Sin ellas los enlaces quedaban en una sola linea.
+  function marcar(abierto: boolean) {
+    menu?.toggleAttribute('data-nav-menu-open', abierto);
+    enlaces.forEach((a) => a.classList.toggle('w--nav-link-open', abierto));
+  }
+
+  function ocultar() {
     navbar?.removeAttribute('data-abierto');
+    navbar?.removeAttribute('data-cerrando');
+    marcar(false);
+  }
+  // Se guarda aparte para poder cancelarlo si se vuelve a abrir el menu
+  // mientras todavia esta subiendo.
+  function alTerminarDeSubir(e: AnimationEvent) {
+    if (e.target !== menu) return;
+    menu?.removeEventListener('animationend', alTerminarDeSubir);
+    ocultar();
+  }
+
+  function cerrar(animado = true) {
+    if (!navbar?.hasAttribute('data-abierto') || navbar.hasAttribute('data-cerrando')) return;
     boton?.setAttribute('aria-expanded', 'false');
     boton?.setAttribute('aria-label', 'Abrir menú');
+    boton?.classList.remove('w--open');
+    if (!animado || sinMovimiento.matches || !menu) return ocultar();
+    // Webflow: antes de ocultarse, el menu vuelve a subir en 0.4 s.
+    navbar.setAttribute('data-cerrando', '');
+    menu.addEventListener('animationend', alTerminarDeSubir);
+  }
+
+  function abrir() {
+    if (!navbar || !boton) return;
+    menu?.removeEventListener('animationend', alTerminarDeSubir);
+    navbar.removeAttribute('data-cerrando');
+    // El menu baja desde el borde inferior de la barra: necesita su altura.
+    navbar.style.setProperty('--alto-nav', `${navbar.offsetHeight}px`);
+    marcar(true);
+    navbar.setAttribute('data-abierto', '');
+    boton.classList.add('w--open');
+    boton.setAttribute('aria-expanded', 'true');
+    boton.setAttribute('aria-label', 'Cerrar menú');
   }
 
   boton?.addEventListener('click', () => {
-    const abierto = navbar?.hasAttribute('data-abierto');
-    if (abierto) return cerrar();
-    navbar?.setAttribute('data-abierto', '');
-    boton.setAttribute('aria-expanded', 'true');
-    boton.setAttribute('aria-label', 'Cerrar menú');
+    const abierto = navbar?.hasAttribute('data-abierto') && !navbar.hasAttribute('data-cerrando');
+    if (abierto) cerrar();
+    else abrir();
   });
 
   // Escape cierra el menu y devuelve el foco al boton.
@@ -89,6 +130,6 @@ const esActual = (href: string) => actual === href;
 
   // Al pasar a escritorio, el menu vuelve a su sitio: limpiamos el estado.
   window.matchMedia('(min-width: 992px)').addEventListener('change', (e) => {
-    if (e.matches) cerrar();
+    if (e.matches) cerrar(false);
   });
 </script>

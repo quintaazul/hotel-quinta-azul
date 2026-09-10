@@ -160,3 +160,90 @@ El desplegable de contacto ya no descuadra: al portar el CSS que faltaba
 - **Turnstile corrio con claves de prueba.** No ejecutan el desafio real, asi
   que devuelven `success` sin `action` ni `hostname`. Las comprobaciones
   estrictas de esos dos campos solo se pueden verificar en produccion.
+
+---
+
+# Auditoria previa a la Fase 3
+
+Medido el 10-sep-2026 contra https://hotelquintaazul.com en vivo. Paginas:
+home, hospedaje, celebraciones, ubicacion, contacto y 404. Anchos: 1920,
+1440, 1366, 1024, 768, 430, 390, 375 y 360 px.
+
+## Animaciones de Webflow: inventario y estado
+
+Se extrajeron las interacciones (IX2) del JavaScript que publica Webflow.
+De 475 eventos, solo estos existen de verdad en el sitio; el resto son
+restos de la plantilla Relume que apuntan a elementos que no existen.
+
+| Donde | Animacion original | Pantallas | Antes de la auditoria | Ahora |
+|-------|--------------------|-----------|-----------------------|-------|
+| home, alberca | La foto pasa de 200% a 100% de ancho en 1.4 s al entrar en pantalla | desde 768 px | Sustituida por otra (aparecer desde abajo) y activa tambien en celular | Igual que Webflow |
+| hospedaje, tarjetas | Al pasar el raton: tarjeta 50% a 70%, velo 0.5 a 0.7, aparece el texto | desde 992 px | Perdida: el texto se veia siempre | Igual |
+| contacto, titulo | "Tu reserva comienza / aquí mismo" entran desde los lados con el scroll | desde 480 px | Perdida | Igual |
+| contacto y ubicacion, preguntas | Acordeon que abre y cierra; el + gira 45 grados | todas | **Rota: las respuestas no se podian abrir** | Igual, y ahora tambien con teclado |
+| menu movil | Baja desde la barra en 0.4 s | menos de 992 px | Aparecia de golpe | Igual |
+| pestanas | La que se va se desvanece en 0.1 s, la nueva entra en 0.3 s | todas | Cambio de golpe | Igual |
+
+Medido lado a lado con Webflow a 1366 px: tarjetas 592/592 a 687/497 px y de
+vuelta (identico), foto 1216 a 608 px, acordeon 0 a 72 px con giro de 45
+grados, titulo en -36%, -20% y 0% en los mismos puntos del scroll.
+Quien activa "reducir movimiento" en su sistema ve el estado final sin
+animacion (Webflow no lo respetaba).
+
+## Menu movil abierto y orden del CSS
+
+En celular y tablet el menu abierto se veia distinto: enlaces en una sola
+linea, botones angostos y letra de 18 px en vez de 16. Dos causas:
+
+1. Webflow marca el menu al abrirlo (`data-nav-menu-open` en el menu,
+   `w--nav-link-open` en los enlaces) y su CSS depende de esas marcas. El
+   script del menu ahora pone las mismas.
+2. El CSS se cargaba en otro orden que en Webflow. Astro junta los estilos
+   comunes a todas las paginas en un paquete y pone el CSS de cada pagina
+   DESPUES, justo al reves que el original, donde los estilos en linea iban
+   al final y ganaban los empates. Ahora cada pagina importa un solo archivo
+   (`src/styles/orden-webflow/`) que encadena los cuatro en el orden de
+   Webflow. Verificado en el build: general, pagina, en linea, arreglos.
+
+## Comparacion completa: 6 paginas x 9 anchos
+
+Para cada seccion se calcula una huella con el tamano, peso, interlineado,
+color, alineacion, subrayado y ancho de cada texto, mas la altura total.
+
+- **home, hospedaje, celebraciones y ubicacion:** identicas en los 9 anchos
+  (como mucho 1 px de redondeo en la altura total).
+- **contacto:** identica salvo 24 px de espacio bajo el boton "Enviar". Los
+  agrega Webflow en vivo con dos contenedores vacios de su anti-spam; el
+  5-sep la pagina media 6042 px en los dos lados.
+- **404:** la de Webflow no carga sus estilos en linea ni sus fuentes (los
+  enlaces del pie salen oscuros sobre el azul). La nuestra usa los estilos
+  del resto del sitio. Diferencia intencional.
+- **Menu movil abierto:** identico en los 5 anchos menores de 992 px.
+
+## Corregido en esta auditoria
+
+1. Animaciones perdidas o cambiadas (tabla de arriba) y acordeon roto.
+2. Menu movil abierto distinto del original y orden del CSS invertido.
+3. La imagen para redes sociales (`og:image`) daba 404: no existia el
+   archivo. Creada en `public/og/` (1200x630) y el build ahora falla si falta.
+4. Faltaba `robots.txt`. Creado, con la ruta del sitemap; el build lo exige.
+5. La pagina de hospedaje todavia descargaba jQuery de un CDN externo.
+   Eliminado; su efecto se reimplemento sin librerias.
+6. La galeria de celebraciones: sus datos en Webflow estaban vacios y al
+   hacer clic la pagina saltaba al inicio. Ahora abre la foto en un visor.
+7. La etiqueta "¿Cuál es tu motivo de visita?" era un elemento en linea;
+   ahora es de bloque, como el `<label>` original.
+8. 6 errores de tipos de TypeScript heredados de la Fase 2 (0 ahora).
+
+## Otras comprobaciones
+
+- Accesibilidad (axe-core, WCAG 2.2 AA): 0 violaciones en las 6 paginas.
+- `astro check`: 0 errores, 0 advertencias.
+- Verificacion SEO propia: pasa en todas; comparador estructural 5/5.
+- Enlaces y recursos: 32 rutas internas, todas responden 200.
+- Sin scroll horizontal en ningun ancho, tampoco con la foto al 200%.
+- Desplegado en https://hotel-quinta-azul.hotel-quinta-azul.workers.dev,
+  version `35cac26a-527c-43d4-b4aa-ae5ee868de59`: mismos archivos que el
+  build local, HTTPS, rutas 200, 404 real, robots, sitemap e imagen OG 200.
+  Turnstile carga sin errores (en localhost da el error 110200 porque ese
+  dominio no esta autorizado en el widget; es lo esperado).

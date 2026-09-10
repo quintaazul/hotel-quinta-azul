@@ -7,6 +7,7 @@
  * en Webflow. El numero entre corchetes es el de la auditoria del 19-ago-2026.
  */
 import { readdir, readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 const DIST = 'dist';
@@ -51,6 +52,10 @@ function link(html, rel) {
 for (const archivo of await paginas(DIST)) {
   const ruta = '/' + relative(DIST, archivo).split(sep).join('/').replace(/(index)?\.html$/, '');
   const html = await readFile(archivo, 'utf8');
+  // Para contar imagenes y encabezados hay que mirar SOLO el marcado que se
+  // renderiza. Sin esto, una plantilla HTML escrita dentro de un <script>
+  // (por ejemplo la del visor de fotos) se contaba como una imagen real.
+  const visible = html.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '');
   const err = (m) => errores.push(`${ruta.padEnd(18)} ${m}`);
   const avi = (m) => avisos.push(`${ruta.padEnd(18)} ${m}`);
 
@@ -74,6 +79,18 @@ for (const archivo of await paginas(DIST)) {
     if (!meta(html, og)) err(`sin ${og}`);
   }
 
+  // No basta con que la etiqueta exista: la imagen tiene que CARGAR.
+  // La primera version solo comprobaba la etiqueta, y las dos og:image
+  // apuntaban a un archivo inexistente. Un enlace compartido salia roto y,
+  // como el schema Hotel reutiliza esa misma URL, el schema tambien.
+  const ogImg = meta(html, 'og:image');
+  if (ogImg) {
+    const ruta = ogImg.replace(/^https?:\/\/[^/]+/, '');
+    if (ruta.startsWith('/') && !existsSync(join(DIST, ruta))) {
+      err(`og:image apunta a un archivo que no existe: ${ruta}`);
+    }
+  }
+
   // [3][4] QA tenia canonical solo en la home; LA apuntaba al apex que redirige.
   const canon = link(html, 'canonical');
   if (!canon) err('sin canonical');
@@ -84,7 +101,7 @@ for (const archivo of await paginas(DIST)) {
   // los dos logos. Ojo: el defecto real es alt VACIO, no alt ausente, asi que
   // comprobar solo la presencia del atributo no habria detectado nada.
   // Para una imagen decorativa de verdad, marcarla con data-decorativa.
-  for (const [tag] of todos(html, /<img\b[^>]*>/g)) {
+  for (const [tag] of todos(visible, /<img\b[^>]*>/g)) {
     const corto = tag.replace(/\s+/g, ' ').slice(0, 95);
     const alt = /\salt="([^"]*)"/.exec(tag);
     if (!alt) err(`imagen sin atributo alt: ${corto}`);
@@ -113,6 +130,21 @@ for (const archivo of await paginas(DIST)) {
   // [10] jQuery cargado dos veces en las paginas de habitaciones.
   const jq = todos(html, /<script[^>]+src="[^"]*jquery[^"]*"/gi).length;
   if (jq) err(`carga jQuery (${jq}) — el port no debe necesitarlo`);
+}
+
+// --- Comprobaciones de sitio, no de pagina -----------------------------
+// robots.txt y el sitemap se comprueban una sola vez. En Webflow, el robots
+// de Quinta Azul existia pero estaba VACIO y su sitemap.xml daba 404.
+if (!existsSync(join(DIST, 'robots.txt'))) {
+  errores.push('sitio               falta robots.txt');
+} else {
+  const robots = await readFile(join(DIST, 'robots.txt'), 'utf8');
+  if (!/^\s*Sitemap:\s*https?:\/\//im.test(robots)) {
+    errores.push('sitio               robots.txt no declara el Sitemap');
+  }
+}
+if (!existsSync(join(DIST, 'sitemap-index.xml'))) {
+  errores.push('sitio               falta sitemap-index.xml');
 }
 
 const linea = '─'.repeat(64);
