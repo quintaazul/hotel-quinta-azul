@@ -247,3 +247,56 @@ color, alineacion, subrayado y ancho de cada texto, mas la altura total.
   build local, HTTPS, rutas 200, 404 real, robots, sitemap e imagen OG 200.
   Turnstile carga sin errores (en localhost da el error 110200 porque ese
   dominio no esta autorizado en el widget; es lo esperado).
+
+---
+
+# Fase 3: publicacion en hotelquintaazul.com
+
+10-sep-2026, ~17:48 hora de Monterrey.
+
+## Como se hizo
+
+1. Zona de Cloudflare creada con copia exacta de los registros que servian a
+   Webflow, en modo "solo DNS". Comprobado contra los nameservers de Cloudflare
+   ANTES de tocar Porkbun: mismas respuestas.
+2. Nameservers cambiados en Porkbun a `cameron` / `clarissa.ns.cloudflare.com`
+   (DNSSEC estaba apagado, asi que el cambio no rompe nada). Zona activa en
+   ~2 minutos. Hasta aqui el sitio seguia saliendo de Webflow.
+3. Ensayo en dos subdominios de prueba (ya borrados): Cloudflare no deja
+   conectar un Worker a un nombre que ya tiene registro, asi que el corte es
+   borrar y conectar en el mismo segundo, con vuelta atras si falla.
+4. Corte: `hotelquintaazul.com` al Worker del sitio y `www` al Worker de
+   `redireccion-www/` (301 al dominio principal, conservando ruta y parametros).
+
+## Verificado en vivo
+
+- Las 5 paginas 200; `/no-existe` 404 real; robots, sitemap e imagen OG 200.
+- `http://` y `www` redirigen con 301 a `https://hotelquintaazul.com`.
+- `/api/contacto`: GET 405, POST sin verificacion de Turnstile 403.
+- Sin jQuery ni recursos de Webflow. La copia en `*.workers.dev` esta apagada
+  y ese hostname salio del widget de Turnstile y de `TURNSTILE_HOSTNAMES`.
+- Email Routing activo (MX, SPF y DKIM de Cloudflare);
+  `hotelquintaazul02@gmail.com` es destino verificado.
+- 1.1.1.1, 8.8.8.8, 9.9.9.9 y OpenDNS ya entregan el sitio nuevo a los ~10
+  minutos. Porkbun sigue respondiendo con los registros viejos a quien tenga
+  la delegacion en cache (hasta 48 h), asi que Webflow NO debe cancelarse
+  antes de unos dias.
+
+## Defecto encontrado al publicar (se le escapo a la auditoria)
+
+El canonical y `og:url` salian como `/contacto.html` e `/index.html`: con
+`build.format: 'file'`, `Astro.url.pathname` trae el nombre del archivo, y esa
+URL redirige (307) a la limpia. Un canonical que redirige. La verificacion SEO
+solo miraba el dominio del canonical y lo dejo pasar. Corregido en
+`Base.astro`, y `seo-check.mjs` ahora exige que canonical y `og:url` sean
+exactamente la URL que se sirve (probado: contra el build anterior falla con
+12 errores).
+
+## Pendiente
+
+- Envio real del formulario desde un telefono para confirmar que el correo
+  llega (Turnstile bloquea a los navegadores automatizados).
+- Permiso `Zone > Workers Routes > Edit` en el token: sin el, `wrangler deploy`
+  sube el codigo pero termina en error al revisar las rutas.
+- Web Analytics: un clic en el panel de Cloudflare.
+- Cancelar el plan de Webflow despues de unos dias.
