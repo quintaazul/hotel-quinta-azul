@@ -284,6 +284,13 @@ export default {
       return recibirSolicitud(request, env, ctx);
     }
 
+    // Webflow servia el indice en /sitemap.xml y el robots.txt viejo de Los
+    // Arcos lo declaraba asi. Astro lo genera como /sitemap-index.xml, de modo
+    // que la URL antigua quedaba en 404 despues de la migracion.
+    if (url.pathname === '/sitemap.xml') {
+      return Response.redirect(new URL('/sitemap-index.xml', url).href, 301);
+    }
+
     return env.ASSETS.fetch(request);
   },
 } satisfies ExportedHandler<Env>;
