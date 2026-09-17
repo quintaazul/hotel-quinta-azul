@@ -308,3 +308,33 @@ beacon NO aparecia en el HTML: Cloudflare no lo inyecta cuando la pagina la
 sirve un Worker, y su documentacion no cubre ese caso. Se anadio el fragmento
 en `Base.astro`, con el token en `hotel.json` (es publico). Comprobado en vivo:
 el beacon carga y el token es el correcto. Sin cookies ni datos personales.
+
+## Rendimiento y regresion de peso (17-sep-2026)
+
+Primera medicion con Lighthouse (movil, red simulada). Salio una **regresion
+que la comparacion visual no podia ver**: Webflow servia cada foto en cuatro
+tamanos (500, 800, 1080 px y la original) y el navegador bajaba la que le
+servia. Al portar se copio el atributo `sizes` pero no los tamanos, asi que un
+telefono se bajaba la imagen de 1500 px.
+
+| | Antes | Ahora | Webflow |
+|---|---|---|---|
+| Rendimiento | 67 | 73 | 70 |
+| LCP (lo que tarda en verse la foto grande) | 10.4 s | 5.1 s | 6.1 s |
+| Peso de la pagina | 2,567 KB | 1,004 KB | 1,090 KB |
+| Solo imagenes | 2,457 KB | 893 KB | 900 KB |
+
+Arreglado en `Foto.astro`: cuando la imagen trae `sizes`, se generan los mismos
+cuatro tamanos. El marcado no cambia y la altura de la home es identica a la de
+Webflow (14,579 px a 375 y 12,429 px a 1425). CLS 0 y bloqueo de hilo 0 ms.
+
+Sin tocar: las fotos siguen cargandose todas al entrar (`loading="eager"`),
+igual que en Webflow. Pasarlas a carga diferida es la siguiente mejora.
+
+## Web Analytics: el beacon NO esta reportando
+
+El fragmento carga, pero su envio a `/cdn-cgi/rum` devuelve 404 y el reintento
+contra `cloudflareinsights.com` lo bloquea CORS. La causa probable: el sitio
+esta dado de alta en modo "instalacion automatica", pensado para paginas que
+Cloudflare inyecta; el nuestro lo sirve un Worker. Falta cambiarlo a **Enable
+with JS Snippet installation** en Manage Site y volver a comprobar.

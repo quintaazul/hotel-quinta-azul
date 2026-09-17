@@ -50,6 +50,16 @@ if (!src) {
 if (!decorativa && !alt.trim()) {
   throw new Error(`La imagen "${archivo}" no tiene alt. Si es decorativa, pasa decorativa={true}.`);
 }
+// Webflow servia varias versiones de cada foto (500, 800, 1080 px y la
+// original) y el navegador bajaba la mas chica que le sirviera. Al portar se
+// copio el atributo `sizes` pero no las versiones, asi que un telefono se
+// bajaba la de 1500 px: la home pesaba 2.5 MB contra 1.1 MB en Webflow.
+// Con esto vuelven las versiones; el marcado y el aspecto no cambian.
+const anchos =
+  widths ??
+  (sizes
+    ? [...new Set([500, 800, 1080, src.width].filter((w) => w <= src.width))].sort((a, b) => a - b)
+    : undefined);
 ---
 <Image
   src={src}
@@ -58,7 +68,7 @@ if (!decorativa && !alt.trim()) {
   loading={loading}
   decoding={loading === 'eager' ? 'sync' : 'async'}
   sizes={sizes}
-  widths={widths}
+  widths={anchos}
   width={width}
   height={height}
   data-decorativa={decorativa ? '' : undefined}
