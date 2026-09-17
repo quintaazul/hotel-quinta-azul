@@ -300,3 +300,11 @@ exactamente la URL que se sirve (probado: contra el build anterior falla con
   sube el codigo pero termina en error al revisar las rutas.
 - Web Analytics: un clic en el panel de Cloudflare.
 - Cancelar el plan de Webflow despues de unos dias.
+
+## Web Analytics (17-sep-2026)
+
+El sitio esta dado de alta en Cloudflare con instalacion automatica, pero el
+beacon NO aparecia en el HTML: Cloudflare no lo inyecta cuando la pagina la
+sirve un Worker, y su documentacion no cubre ese caso. Se anadio el fragmento
+en `Base.astro`, con el token en `hotel.json` (es publico). Comprobado en vivo:
+el beacon carga y el token es el correcto. Sin cookies ni datos personales.

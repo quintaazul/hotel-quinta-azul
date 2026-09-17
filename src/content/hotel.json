@@ -43,5 +43,6 @@
     "https://www.facebook.com/profile.php?id=61557575860076"
   ],
   "turnstileSitekey": "0x4AAAAAAEp0Zwo-xpt7mMKF",
+  "analyticsToken": "6a0986818a464d6a8abeaaf338872f69",
   "_nota": "Fuente unica de verdad. Alimenta a la vez el texto visible y el JSON-LD, para que no puedan contradecirse. La imagen del schema se resuelve desde src/assets en el layout: en Webflow apuntaba a /img/...webp y devolvia 404 (defecto 8 de la auditoria). La clave de Turnstile es PUBLICA por diseño (va en el HTML), asi que vive aqui y no en un .env ignorado: de lo contrario un clon nuevo compilaria con la clave de prueba sin avisar."
 }

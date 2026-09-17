@@ -113,5 +113,20 @@ const schemaHotel = {
       // Pestañas, tarjetas, acordeon, galeria y animaciones: ver el archivo.
       import '../scripts/interacciones.ts';
     </script>
+
+    {/*
+      Web Analytics de Cloudflare: cuenta visitas sin cookies ni datos
+      personales. Su documentacion dice que lo inyecta solo en los sitios que
+      pasan por su proxy, pero con el sitio servido por un Worker NO lo hace
+      (comprobado en vivo el 17-sep-2026), asi que el fragmento va aqui. El
+      token es publico, por eso vive en hotel.json. Vacio = no se carga nada.
+    */}
+    {hotel.analyticsToken && (
+      <script
+        is:inline
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={`{"token": "${hotel.analyticsToken}"}`}></script>
+    )}
   </body>
 </html>
