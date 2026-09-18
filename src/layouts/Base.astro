@@ -124,7 +124,7 @@ const schemaHotel = {
     {hotel.analyticsToken && (
       <script
         is:inline
-        defer
+        type="module"
         src="https://static.cloudflareinsights.com/beacon.min.js"
         data-cf-beacon={`{"token": "${hotel.analyticsToken}"}`}></script>
     )}
