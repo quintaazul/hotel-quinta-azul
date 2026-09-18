@@ -347,3 +347,31 @@ nuestro caso da 404 porque el origen es un Worker, y el reintento contra
 with JS Snippet installation**, su token propio y el fragmento tal como lo
 entrega Cloudflare, el envio sale sin errores de consola y las visitas ya
 aparecen en la API de analitica.
+
+
+## Formulario: casillas y opciones que no se veian marcadas (17-sep-2026)
+
+Lo detecto Emilio probando el formulario. **Era una falla real de la
+migracion.** En Webflow el input de verdad va oculto y lo que se ve es un
+<div>; su JavaScript le anade la clase  al marcarlo.
+Al quitar jQuery y webflow.js se perdio esa parte: la opcion SI se guardaba,
+pero el circulo y la casilla no cambiaban, asi que el formulario parecia roto.
+El CSS de esas clases ya estaba portado; solo faltaba ponerlas.
+
+Reconstruido en , incluido el repintado del grupo entero de
+opciones (al marcar una, las demas se desmarcan) y el aro de foco del teclado.
+Medido contra la copia de Webflow, el resultado es identico: opcion marcada con
+borde de 6 px en #07070a y fondo blanco; casilla en #07070a con su palomita.
+
+Dos cosas mas que salieron de ahi:
+
+- **El anti-spam quedaba pegado al boton Enviar** cuando se dibujaba. Ahora
+  se le da aire solo en ese caso: se mide el widget y, si ocupa algo, se le
+  ponen 16 px arriba y 8 abajo. Para quien no ve el desafio (casi todos) la
+  pagina no cambia ni un pixel.
+- **La palomita de la casilla se descargaba del CDN estatico de Webflow.** Era
+  la ultima dependencia suya que quedaba y no habia salido en ninguna revision
+  porque solo se ve al marcar la casilla. Ya vive en el repo.
+
+Por que no lo vio la auditoria: comparaba las paginas en reposo y las
+animaciones, pero nunca marco una opcion ni una casilla.

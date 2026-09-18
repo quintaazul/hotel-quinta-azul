@@ -203,3 +203,18 @@ textarea:focus-visible {
   border: 0;
   cursor: pointer;
 }
+
+/* El anti-spam solo se dibuja ante trafico sospechoso. Cuando aparece quedaba
+   pegado al boton "Enviar"; la clase la pone interacciones.ts al medir el
+   widget, asi que para quien no ve el desafio la pagina no cambia. */
+.cf-turnstile.con-desafio {
+  margin: 1rem 0 .5rem;
+}
+
+/* La palomita de la casilla marcada venia del CDN estatico de Webflow
+   (d3e54v103j8qbb.cloudfront.net): era la ultima dependencia suya que quedaba.
+   Solo se ve al marcar la casilla, por eso no aparecio en las revisiones, que
+   miraban la pagina en reposo. Ahora el archivo vive en el repo. */
+.w-checkbox-input--inputType-custom.w--redirected-checked {
+  background-image: url('../assets/palomita-casilla.svg');
+}

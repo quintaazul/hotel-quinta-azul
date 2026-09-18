@@ -277,3 +277,59 @@ if (cta && renglonArriba && renglonAbajo) {
   activa.addEventListener('change', actualizar);
   actualizar();
 }
+
+/* ---------------------------------------------------------------------------
+ * Casillas y opciones del formulario
+ *
+ * En Webflow el input real va oculto y lo que se ve es un <div>; su JavaScript
+ * le pone la clase w--redirected-checked cuando el input queda marcado. Al
+ * quitar jQuery y webflow.js se perdio esa parte: el formulario SI guardaba la
+ * opcion elegida, pero el circulo y la casilla no cambiaban, asi que parecia
+ * roto. El CSS de esas clases ya estaba portado; solo faltaba ponerlas.
+ * ------------------------------------------------------------------------ */
+{
+  const recuadro = (input: HTMLInputElement) =>
+    input.closest('label')?.querySelector<HTMLElement>('.w-radio-input, .w-checkbox-input') ?? null;
+
+  const pintarUno = (input: HTMLInputElement) => {
+    recuadro(input)?.classList.toggle('w--redirected-checked', input.checked);
+  };
+
+  // Al marcar una opcion, las demas de su grupo se desmarcan solas: hay que
+  // repintar el grupo entero, no solo la que recibio el clic.
+  const pintarGrupo = (input: HTMLInputElement) => {
+    if (input.type === 'radio' && input.name) {
+      document
+        .querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${CSS.escape(input.name)}"]`)
+        .forEach(pintarUno);
+    } else {
+      pintarUno(input);
+    }
+  };
+
+  document
+    .querySelectorAll<HTMLInputElement>('.w-radio input[type="radio"], .w-checkbox input[type="checkbox"]')
+    .forEach((input) => {
+      pintarUno(input); // por si el navegador restaura lo elegido al volver atras
+      input.addEventListener('change', () => pintarGrupo(input));
+      input.addEventListener('focus', () => recuadro(input)?.classList.add('w--redirected-focus'));
+      input.addEventListener('blur', () => recuadro(input)?.classList.remove('w--redirected-focus'));
+    });
+}
+
+/* ---------------------------------------------------------------------------
+ * Anti-spam: separarlo del boton solo cuando se dibuja
+ *
+ * Turnstile esta en modo "interaction-only": para casi todo el mundo no se ve
+ * nada y la pagina queda identica a Webflow. Cuando SI aparece el desafio,
+ * quedaba pegado al boton "Enviar". Se mide el widget y se le da aire solo en
+ * ese caso, para no mover la pagina de quien no lo ve.
+ * ------------------------------------------------------------------------ */
+{
+  const widget = document.querySelector<HTMLElement>('.cf-turnstile');
+  if (widget && 'ResizeObserver' in window) {
+    new ResizeObserver(() => {
+      widget.classList.toggle('con-desafio', widget.offsetHeight > 10);
+    }).observe(widget);
+  }
+}
