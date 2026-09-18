@@ -331,10 +331,19 @@ Webflow (14,579 px a 375 y 12,429 px a 1425). CLS 0 y bloqueo de hilo 0 ms.
 Sin tocar: las fotos siguen cargandose todas al entrar (`loading="eager"`),
 igual que en Webflow. Pasarlas a carga diferida es la siguiente mejora.
 
-## Web Analytics: el beacon NO esta reportando
+## Web Analytics: por que no reportaba y como se arreglo
 
 El fragmento carga, pero su envio a `/cdn-cgi/rum` devuelve 404 y el reintento
 contra `cloudflareinsights.com` lo bloquea CORS. La causa probable: el sitio
 esta dado de alta en modo "instalacion automatica", pensado para paginas que
 Cloudflare inyecta; el nuestro lo sirve un Worker. Falta cambiarlo a **Enable
 with JS Snippet installation** en Manage Site y volver a comprobar.
+
+**Resuelto el 17-sep-2026.** El sitio estaba dado de alta en modo
+"instalacion automatica", pensado para paginas que inyecta el propio
+Cloudflare; ahi el beacon reporta a  del mismo dominio, que en
+nuestro caso da 404 porque el origen es un Worker, y el reintento contra
+ lo bloqueaba CORS. Con el sitio en modo **Enable
+with JS Snippet installation**, su token propio y el fragmento tal como lo
+entrega Cloudflare, el envio sale sin errores de consola y las visitas ya
+aparecen en la API de analitica.
